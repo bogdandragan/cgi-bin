@@ -39,7 +39,7 @@ elsif($request->{action} eq 'update'){
 	die;
 }
 elsif($request->{action} eq 'remove'){
-	my $sth = $dbh->prepare('DELETE FROM contacts WHERE id = ?'
+	my $sth = $dbh->prepare('DELETE FROM contacts WHERE id = ?');
 	$sth->execute($request->{id});
 	die;
 }
