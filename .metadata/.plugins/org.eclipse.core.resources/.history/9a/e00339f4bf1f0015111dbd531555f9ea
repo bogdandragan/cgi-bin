@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Dashboard</title>
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+	<script src="js/jquery-1.11.3.min.js"></script>
+	<script src="js/js.cookie.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+    <script src="js/func.js"></script>
+	<!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+
+<script type="text/javascript">
+    if(!Cookies.get('accessToken') || Cookies.get('accessToken') == '')
+    {
+        window.location.replace("./login.html");
+    }
+    //check access token in db
+    var request = {'action':'checkToken', 'params':{'accessToken':Cookies.get('accessToken')}};
+    $.ajax({
+        type: 'POST',
+        url: SERVICE_URL+'api.php',
+        data: JSON.stringify(request),
+        contentType: "application/json; charset=utf-8",
+        success: function(data){
+            var obj = JSON.parse(data);
+            if(obj['error'] == ''){
+                loadProfile();
+            }
+            else{
+                window.location.replace("./login.html");
+            }
+        }
+    });
+
+    $(document).ready(function(){
+        $("#table-users").hide();
+        isAdmin(function(){
+            $("#table-users").show();
+            loadUsers();
+        });    
+    })       
+</script>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+          <a class="navbar-brand" href="#">Test project</a>                   
+        <ul class="nav navbar-nav navbar-right">
+            <a id="signOut" class="btn btn-success navbar-btn" href="#">Sign Out</a>         
+        </ul>
+      </div>
+    </nav>
+<div class="container" style="margin-top:70px;">
+<div class="panel panel-info">
+    <div class="panel-heading">
+        <h3 class="panel-title" style="display:inline-block;">Edit profile</h3>
+        <p style="float:right; display:inline-block;">Last visit:<span id="lastvisit"></span></p>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-3 col-lg-3 " align="center"> 
+                <img id="photo" width="150px" alt="User photo" src="" class="img-thumbnail">
+                <p>Change current photo</p>
+                <input type="file" accept="image/jpeg, image/png" name="uploadimage" id="uploadimage"> 
+            </div>               
+            <div class=" col-md-9 col-lg-9 ">  
+                <form id="profileInfo" method="post">
+                <div class="col-md-6 col-lg-6 ">
+                    <label>Name</label>
+                    <div class="form-group">
+                        <input id="name" class="form-control" type="text" required>
+                    </div>
+
+                    <label>Last name</label>
+                    <div class="form-group">
+                        <input id="lastname" class="form-control" type="text" required>
+                    </div>
+
+                    <label>Address</label>
+                    <div class="form-group">
+                        <textarea id="address" class="form-control" type="text" required></textarea>
+                    </div>
+                </div>
+                <div class=" col-md-6 col-lg-6 ">
+                    <label>Email</label>
+                    <div class="form-group" id="email-group">
+                        <input id="email" class="form-control" type="text"required>
+                    </div>
+
+                    <label>Password</label>
+                    <div class="form-group">
+                        <input id="password" class="form-control" type="password">
+                    </div>
+
+                    <label>Confirm password</label>
+                    <div class="form-group">
+                        <input id="confpassword" class="form-control" type="password">
+                    </div>
+
+                    <div class="form-group" style="margin-top: 40px;">
+                        <button id="submit" data-button="#id" style="float: right;" type="submit" class="btn btn-primary">Save changes</button> 
+                    </div>
+                    <div id="error" style="color: red;"></div>
+                </div>
+                </form>                 
+            </div>
+        </div>
+    </div>     
+</div>
+    <div class="table-responsive">
+        <table id="table-users" class="table table-bordred table-striped table-condensed ">
+	    <caption><h3>User accounts list</h3></caption>
+            <thead>
+                <th width="100px" style="">Photo</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th width="200px">Address</th>
+                <th>Last Visit</th>
+                <th class="text-center">Edit</th>
+            </thead>
+            <tbody id="tbody">
+                
+            </tbody>
+        </table>
+     </div>
+</div>  
+<div class="modal fade" id="usrModal" tabindex="-1" role="dialog" aria-labelledby="usrModal" aria-hidden="true">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header">
+            <!--<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&amp;times;</button>-->
+            <h4 class="modal-title" id="modalTitle">Edit user</h4>
+            </div>
+            <div class="modal-body">
+                <form id="usrInfo" method="post">
+                <div class="row">
+                <div class=" col-md-6 col-lg-6 ">
+                    <label>Name</label>
+                    <div class="form-group">
+                        <input id="usrname" class="form-control" type="text" required>
+                    </div>
+                </div>
+                <div class=" col-md-6 col-lg-6 ">
+                    <label>Email</label>
+                    <div class="form-group" id="email-group">
+                        <input id="usremail" class="form-control" type="text"required>
+                    </div>
+                </div>
+                </div>
+                <div class="row">
+                <div class=" col-md-6 col-lg-6 ">
+                    <label>Last name</label>
+                    <div class="form-group">
+                        <input id="usrlastname" class="form-control" type="text" required>
+                    </div>
+                </div>
+                <div class=" col-md-6 col-lg-6 ">
+                    <label>Password</label>
+                    <div class="form-group">
+                        <input id="usrpassword" class="form-control" type="password">
+                    </div>
+                </div>
+                </div>
+                <div class="row">
+                <div class=" col-md-6 col-lg-6 ">
+                    <label>Address</label>
+                    <div class="form-group">
+                        <textarea id="usraddress" class="form-control" type="text" required></textarea>
+                    </div>
+                </div>
+                <div class=" col-md-6 col-lg-6 ">
+                    <label>Confirm password</label>
+                    <div class="form-group">
+                        <input id="usrconfpassword" class="form-control" type="password">
+                    </div>
+                </div>
+                </div>       
+            </div>
+            <div class="modal-footer">
+                <div id="usrerror" style="color: red; float: left;"></div>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button id="usrsubmit" type="submit" class="btn btn-primary" data-button="#id">Save changes</button>
+                </form>
+            </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+    var uploadedFile = {};
+   
+      $("input[type=file]").change(function(event) {
+        var file = event.target.files[0];
+          var reader = new FileReader();
+          reader.onload = function(event) {  
+            uploadedFile = {};
+            //uploadedFile.filename = file.name;
+            uploadedFile.data = event.target.result;
+          };
+          reader.readAsDataURL(file);
+    });
+
+    $("#profileInfo").submit(function(event){
+        event.preventDefault();
+
+        $("#errors ul").empty();
+        if($("#password").val().length > 0){
+            var passlength = $("#password").val().length;
+            if(passlength < 6 || passlength > 24){
+            $("#error").text("Password must be between 6 and 24 characters");
+            return;
+            }
+
+            if($('#password').val() != $('#confpassword').val()){
+            $("#error").text("Password and Confirm password don't match");
+            return;
+            }
+        }
+
+    var request = {'action':'updateUser', 'params':{'id': $("#submit").attr("data-button"),'name':$("#name").val(), 
+                                                    'lastname':$("#lastname").val(), 'email':$("#email").val(), 
+                                                    'address':$("#address").val(), 'password':$("#password").val(), 
+                                                    'photo':uploadedFile.data}};
+        
+    $.ajax({
+        type: 'POST',
+        url: SERVICE_URL+'api.php',
+        data: JSON.stringify(request),
+        contentType: "application/json; charset=utf-8",
+        success: function(data){
+            var obj = JSON.parse(data);
+            if(obj['error'] == ''){
+                loadProfile();
+                $("#error").html("<span style='color: green;'>User info has been saved</span>");
+            }
+            else{
+                $("#error").html("<span style='color: green;'>"+obj['error']+"</span>");
+            }
+        }
+    });
+});
+
+$(document).on('click', "#usrEdit", function() {
+    var id = $(this).attr("data-button");
+    $("#usrsubmit").attr("data-button", id);
+    var request = {'action':'getUserById', 'params':{'id':id}};
+
+    $.ajax({
+        type: 'POST',
+        url: SERVICE_URL+'api.php',
+        data: JSON.stringify(request),
+        contentType: "application/json; charset=utf-8",
+        success: function(data){
+            var obj = JSON.parse(data);
+            if(obj['error'] == ''){
+                loadUserModal(obj['data']);
+            }
+        }
+    });
+});
+
+$("#usrInfo").submit(function(event){
+        event.preventDefault();
+
+        $("#usrerrors ul").empty();
+        if($("#usrpassword").val().length > 0){
+            var passlength = $("#usrpassword").val().length;
+            if(passlength < 6 || passlength > 24){
+            $("#usrerror").text("Password must be between 6 and 24 characters");
+            return;
+            }
+
+            if($('#usrpassword').val() != $('#usrconfpassword').val()){
+            $("#usrerror").text("Password and Confirm password don't match");
+            return;
+            }
+        }
+
+    var request = {'action':'updateUser', 'params':{'id': $("#usrsubmit").attr("data-button"),'name':$("#usrname").val(), 
+                                                    'lastname':$("#usrlastname").val(), 'email':$("#usremail").val(), 
+                                                    'address':$("#usraddress").val(), 'password':$("#usrpassword").val()}};
+        
+    $.ajax({
+        type: 'POST',
+        url: SERVICE_URL+'api.php',
+        data: JSON.stringify(request),
+        contentType: "application/json; charset=utf-8",
+        success: function(data){
+            var obj = JSON.parse(data);
+            if(obj['error'] == ''){
+                $("#usrerror").html("<span style='color: green;'>User info has been saved</span>");
+                loadUsers();
+                $('#usrModal').modal('hide');
+            }
+            else{
+                $("#usrerror").text(obj['error']);
+            }
+        }
+    });
+});
+
+$("#signOut").click(function(){
+    Cookies.remove('accessToken');
+    window.location.reload();
+}); 
+</script>    
+</body>
+</html>
